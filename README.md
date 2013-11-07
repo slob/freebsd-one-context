@@ -20,3 +20,29 @@ me. Here are a the gotchas I can think of:
 
 And finally, I only tested this on OpenNebula 4.2 (on debian) running
 a minimal FreeBSD 9.2 image.
+
+```
++++ /usr/lib/one/sh/scripts_common.sh	2013-11-07 01:42:21.876367331 +0000
+@@ -42,6 +42,7 @@
+ RM=rm
+ SCP=scp
+ SED=sed
++SGDISK=sgdisk
+ SSH=ssh
+ SUDO=sudo
+ SYNC=sync
+@@ -277,6 +278,13 @@
+             echo "$MKSWAP -L swap $DST"
+             return 0
+             ;;
++        "freebsd-swap")
++            echo "$SGDISK --clear $DST"
++            echo "$SGDISK --new=1:2048: $DST"
++            echo "$SGDISK --typecode=1:a502 $DST"
++            echo "$SGDISK --change-name=1:gpswap $DST"
++            return 0
++            ;;
+         "qcow2")
+             echo "$QEMU_IMG create -f qcow2 $DST ${SIZE}M"
+             return 0
+```

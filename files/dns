@@ -1,0 +1,20 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+nameservers=''
+for ns in "$DNS" `env | grep -E '^ETH[0-9]+_DNS=' | sort | cut -d= -f2`; do
+  if [ -n "$ns" ]; then
+    nameservers="$nameservers $ns"
+  fi
+done
+
+[ -z "$nameservers" ] && exit 0
+
+sed -i '' -e "/^nameserver /d" /etc/resolv.conf
+
+for ns in $nameservers; do
+  echo "nameserver $ns"
+done >> /etc/resolv.conf
+
+exit 0

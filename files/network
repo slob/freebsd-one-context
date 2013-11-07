@@ -1,0 +1,79 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+get_mac() {
+  if=$1
+
+  ifconfig $if | sed -nEe 's/ *ether {1,}(([0-9a-f]{2}:){5}[0-9a-f]{2})$/\1/p'
+}
+
+get_iface_var() {
+  if=$1
+  var=$2
+
+  eval echo \$${if}_${var}
+}
+
+sed -i '' -e "/^defaultrouter=/d"      /etc/rc.conf
+sed -i '' -e "/^defaultrouter_ipv6=/d" /etc/rc.conf
+
+ifaces=`ifconfig -l | awk 'BEGIN { RS=ORS=" " } !/^lo/'`
+
+n=0
+for lif in $ifaces; do
+  oif="ETH${n}"
+  mac=`get_mac $lif`
+  mac3=`echo $mac | cut -d: -f 3`
+  mac4=`echo $mac | cut -d: -f 4`
+  mac5=`echo $mac | cut -d: -f 5`
+  mac6=`echo $mac | cut -d: -f 6`
+
+  ip=`get_iface_var "$oif" "IP"`
+  failback_ip=`printf "%d.%d.%d.%d" 0x$mac3 0x$mac4 0x$mac5 0x$mac6`
+  mask=`get_iface_var "$oif" "MASK"`
+  failback_mask='255.255.255.0'
+  gateway=`get_iface_var "$oif" "GATEWAY"`
+  failback_gateway=`echo $IP | cut -d. -f1,2,3`.1
+
+  ipv6=`get_iface_var "$oif" "IPV6"`
+  [ -z "$ipv6" ] && ipv6=`get_iface_var "$oif" "IP6"`
+  gateway6=`get_iface_var "$oif" "GATEWAY6"`
+
+  context_force_ipv4=`get_iface_var "$oif" "CONTEXT_FORCE_IPV4"`
+
+  sed -i '' -e "/^ifconfig_${lif}=/d"      /etc/rc.conf
+  sed -i '' -e "/^ifconfig_${lif}_ipv6=/d" /etc/rc.conf
+
+  if [ -z "$ipv6" -o -n "$context_force_ipv4" ]; then
+    printf "ifconfig_%s=\"inet %s netmask %s\"\n" \
+      "$lif" "${ip:-$failback_ip}" "${mask:-$failback_mask}" >> /etc/rc.conf
+
+    if [ "$n" -eq 0 ]; then
+      sed -i '' -e "/^defaultrouter=/d" /etc/rc.conf
+      printf "defaultrouter=\"%s\"\n" \
+        "${gateway:-$failback_gateway}" >> /etc/rc.conf
+    elif [ -n "$gateway" ]; then
+      sed -i '' -e "/^defaultrouter=/d" /etc/rc.conf
+      printf "defaultrouter=\"%s\"\n" \
+        "$gateway" >> /etc/rc.conf
+    fi
+  fi
+
+  if [ -n "$ipv6" ]; then
+    printf "ifconfig_%s_ipv6=\"inet6 %s prefixlen %d\"\n" \
+      "$lif" "$ipv6" 64 >> /etc/rc.conf
+
+    if [ -n "$gateway6" ]; then
+      sed -i '' -e "/^defaultrouter_ipv6=/d" /etc/rc.conf
+      printf "defaultrouter_ipv6=\"%s\"\n" \
+        "$gateway6" >> /etc/rc.conf
+    fi
+  fi
+
+  /etc/rc.d/netif restart $lif
+
+  n=`expr $n + 1`
+done
+
+exit 0

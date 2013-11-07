@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# $FreeBSD$
+#
+# PROVIDE: vmcontext
+# REQUIRE: LOGIN
+#
+# Add the following lines to /etc/rc.conf.local or /etc/rc.conf
+# to enable this service:
+#
+# vmcontext_enable (bool):	Set to NO by default.
+#				Set it to YES to enable vmcontext.
+# vmcontext_dir (string):	Set to directory containing contextualisation
+#				scripts.
+
+. /etc/rc.subr
+
+name=vmcontext
+rcvar=`set_rcvar`
+
+load_rc_config $name
+
+: ${vmcontext_enable:="NO"}
+: ${vmcontext_dir="%%PREFIX%%/etc/one-context.d"}
+
+start_cmd="do_start"
+stop_cmd="do_stop"
+status_cmd="do_status"
+poll_cmd="do_poll"
+
+execute_scripts() {
+	_dir=$1
+
+	files=`rcorder ${_dir}/* 2>/dev/null`
+	for _rc_elem in ${files}; do
+		case "$_rc_elem_done" in
+		*" $_rc_elem "*)	continue ;;
+		esac
+
+		run_rc_script ${_rc_elem} '_dummy'
+	done
+}
+
+export_rc_vars() {
+	_file=$1
+
+	if [ -f ${_file} ]; then
+		_one_vars=`cut -s -d= -f1 ${_file}`
+		. ${_file}
+		for v in ${_one_vars}; do
+			export $v
+		done
+	fi
+}
+
+do_start() {
+	if ! checkyesno $rcvar; then
+		echo -n "Cannot 'start' $name. Set ${rcvar} to YES in "
+		echo    "/etc/rc.conf or use 'onestart' instead of 'start'."
+		return 0
+	fi
+
+	check_startmsgs && echo "Starting ${name}."
+
+	if [ -e /dev/iso9660/CONTEXT ]; then
+		mount -t cd9660 -o ro /dev/iso9660/CONTEXT /mnt
+
+		if [ -f /mnt/context.sh ]; then
+			export_rc_vars /mnt/context.sh
+		fi
+
+		execute_scripts $vmcontext_dir
+
+		umount /mnt
+	else
+		execute_scripts $vmcontext_dir
+	fi
+}
+
+do_stop() {
+	echo "Stopping ${name}."
+}
+
+do_status() {
+	echo "${name} has run"
+}
+
+do_poll() {
+}
+
+run_rc_command "$1"

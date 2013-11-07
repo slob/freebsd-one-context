@@ -1,0 +1,5 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+swapon /dev/gpt/gpswap > /dev/null 2>&1

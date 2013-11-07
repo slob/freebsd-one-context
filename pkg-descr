@@ -1,0 +1,13 @@
+Port of the one-context package which allows contextualisation of FreeBSD
+VMs created using OpenNebula.
+
+This port supports the mounting of the contextualisation CD, export of
+context variables defined in OpenNebula templates and the execution of
+scripts to perform the contextualisation.
+
+Included contextualisation scripts emulate those built into the official
+debian one-context package and take care of networking, DNS, SSH key
+installation, mounting of swap partitions and execution of any included
+init.sh.
+
+WWW: http://www.opennebula.org/

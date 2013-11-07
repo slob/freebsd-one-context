@@ -1,0 +1,19 @@
+@exec mkdir -p %D/etc/one-context.d
+@unexec if cmp -s %D/%%DATADIR%%/one-context.d/network.sample %D/etc/one-context.d/network; then rm -f %D/etc/one-context.d/network; fi
+%%DATADIR%%/one-context.d/network.sample
+@exec if [ ! -f %D/etc/one-context.d/network ] ; then cp -p %D/%%DATADIR%%/one-context.d/network.sample %D/etc/one-context.d/network; fi
+@unexec if cmp -s %D/%%DATADIR%%/one-context.d/dns.sample %D/etc/one-context.d/dns; then rm -f %D/etc/one-context.d/dns; fi
+%%DATADIR%%/one-context.d/dns.sample
+@exec if [ ! -f %D/etc/one-context.d/dns ] ; then cp -p %D/%%DATADIR%%/one-context.d/dns.sample %D/etc/one-context.d/dns; fi
+@unexec if cmp -s %D/%%DATADIR%%/one-context.d/ssh_public_key.sample %D/etc/one-context.d/ssh_public_key; then rm -f %D/etc/one-context.d/ssh_public_key; fi
+%%DATADIR%%/one-context.d/ssh_public_key.sample
+@exec if [ ! -f %D/etc/one-context.d/ssh_public_key ] ; then cp -p %D/%%DATADIR%%/one-context.d/ssh_public_key.sample %D/etc/one-context.d/ssh_public_key; fi
+@unexec if cmp -s %D/%%DATADIR%%/one-context.d/mount-swap.sample %D/etc/one-context.d/mount-swap; then rm -f %D/etc/one-context.d/mount-swap; fi
+%%DATADIR%%/one-context.d/mount-swap.sample
+@exec if [ ! -f %D/etc/one-context.d/mount-swap ] ; then cp -p %D/%%DATADIR%%/one-context.d/mount-swap.sample %D/etc/one-context.d/mount-swap; fi
+@unexec if cmp -s %D/%%DATADIR%%/one-context.d/execute-scripts.sample %D/etc/one-context.d/execute-scripts; then rm -f %D/etc/one-context.d/execute-scripts; fi
+%%DATADIR%%/one-context.d/execute-scripts.sample
+@exec if [ ! -f %D/etc/one-context.d/execute-scripts ] ; then cp -p %D/%%DATADIR%%/one-context.d/execute-scripts.sample %D/etc/one-context.d/execute-scripts; fi
+@dirrmtry etc/one-context.d
+@dirrm %%DATADIR%%/one-context.d
+@dirrm %%DATADIR%%

@@ -1,0 +1,23 @@
+#!/bin/sh
+
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+
+mount_dir=/mnt
+tmp_dir=/tmp/one-context-tmp
+
+if [ -z "$INIT_SCRIPTS" ]; then
+  if [ -f "$mount_dir/init.sh" ]; then
+    INIT_SCRIPTS=init.sh
+  fi
+fi
+
+mkdir -p $tmp_dir
+cd $mount_dir
+
+for f in $INIT_SCRIPTS; do
+  cp $f $tmp_dir
+  chmod +x $tmp_dir/$f
+  $tmp_dir/$f
+done
+
+exit 0

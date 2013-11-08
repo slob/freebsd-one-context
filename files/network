@@ -76,4 +76,6 @@ for lif in $ifaces; do
   n=`expr $n + 1`
 done
 
+/etc/rc.d/routing restart
+
 exit 0

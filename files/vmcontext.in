@@ -20,7 +20,7 @@ rcvar=`set_rcvar`
 
 load_rc_config $name
 
-: ${vmcontext_enable:="NO"}
+: ${vmcontext_enable="NO"}
 : ${vmcontext_dir="%%PREFIX%%/etc/one-context.d"}
 
 start_cmd="do_start"
